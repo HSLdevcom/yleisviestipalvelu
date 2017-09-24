@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>{{ title }}</title>
+
+    <link rel='stylesheet' href='static/css/jquery-ui.min.css' />
+    <link rel='stylesheet' href='static/css/bootstrap.min.css' />
+
+    <style>
+      body, head {
+        margin: 5px;
+      }
+
+      .x {
+        cursor: default;
+      }
+
+      .x:hover {
+        color: red;
+      }
+
+      #header {
+        height: 70px;
+        line-height: 70px;
+        width: 100%;
+        text-align: center;
+      }
+
+      #msgForm {
+        width: 100%;
+      }
+
+      #msg {
+        position: absolute;
+        width: 100%;
+        height: calc(100% - 80px);
+        bottom: 0px;
+        padding: 10px 10px 0 0;
+        margin-bottom: 5px;
+        width: calc(100% - 10px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        border: solid 1px;
+      }
+
+      #rawJsonFlow {
+        height: 635px;
+        width: 750px;
+        margin-left: -50px;
+      }
+
+      #rawJsonBody {
+        position: relative;
+        width: 100%;
+        height: 500px;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="header">
+      <div class="col-sm-4" align="left">
+        <h3>Yleisviestin muokkaus</h3>
+      </div>
+      <div class="col-sm-8" align="right">
+        <button id="newMsg" class="btn btn-primary">Lisää uusi viesti</button>
+        <button id="emptyMsg" class="btn btn-danger">Tyhjennä</button>
+        <button id="confirmMsg" class="btn btn-warning">Vahvista muutokset</button>
+        <button id="showRawMsg" class="btn btn-default">Näytä raaka aineisto</button>
+      </div>
+    </div>
+
+    <div id="msgform">
+      <form id="msg"></form>
+    </div>
+
+    <div class="modal fade" id="rawJson">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content" id="rawJsonFlow">
+          <div class="modal-header">
+            <h3 class="modal-title">Yleisviestin sisältö raakana</h5>
+          </div>
+          <div class="modal-body" id="rawJsonBody">
+            <pre id="json"></pre>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Sulje</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src='static/js/jquery-2.2.4.min.js'></script>
+    <script src='static/js/bootstrap.min.js'></script>
+    <script src='static/js/moment-2.18.1.js'></script>
+    <script>
+      let msg = JSON.parse('{% raw json %}');
+
+      // check if the message already contains some content, if so render them to the form
+      if (msg.staticMessages.length !== 0) { addContentToFormDiv(msg.staticMessages); }
+
+      $("#newMsg").click((e) => {
+        if (e.keyCode === 13) { e.preventDefault(); }
+        id = moment().format("DDMMYYYY_HHmmss_SS").toString();
+
+        // add new message to the modifiable message list
+        msg.staticMessages.push(
+          {
+            "id": `${id}`,
+            "content": {
+              "fi": [
+                { "content": "", "type": "heading" },
+                { "content": "", "type": "text"}
+              ],
+              "en": [
+                { "content": "", "type": "heading" },
+                { "content": "", "type": "text" }
+              ],
+              "sv": [
+                { "content": "", "type": "heading" },
+                { "content": "", "type": "text" }
+              ]
+            }
+          }
+        );
+
+        // add new form div to the form
+        addNewFormDiv(id);
+
+        // update the message id value to the form
+        $(`#msg-id-${id}`).val(id);
+      });
+
+      $("#emptyMsg").click((e) => {
+        if (e.keyCode === 13) { e.preventDefault(); }
+        $("#msg").empty();
+        msg = { "staticMessages": [] };
+      });
+
+      $("#confirmMsg").click((e) => {
+        if (e.keyCode === 13) { e.preventDefault(); }
+        if (confirm("Oletko varma? (korvaa olemassa olevan viestin)") == true) {
+          $.ajax({
+            type: "POST",
+            url: "/copyJson",
+            contentType : 'application/json;charset=utf-8',
+            data: (msg.staticMessages.length === 0) ? JSON.stringify({ "staticMessages": []}) : JSON.stringify(msg),
+            success: () => { console.log('Ylikirjaus ja kopiointi onnistui!'); }
+          });
+        }
+      });
+
+      $("#showRawMsg").click((e) => {
+        if (e.keyCode === 13) { e.preventDefault(); }
+        $("#json").text(JSON.stringify(msg, null, 2));
+        $('#rawJson').modal('show');
+      })
+
+      function addContentToFormDiv(msg) {
+        // Loop through individual list in the staticMessages array
+        for (let i = 0; i < msg.length; i++) {
+          addNewFormDiv(msg[i].id);
+          $(`#msg-id-${msg[i].id}`).val(msg[i].id);
+
+          for (let key in msg[i].content) {
+            if (msg[i].content.hasOwnProperty(key)) {
+              parseMsg(key, msg[i].id, msg[i].content[key]);
+            }
+          }
+        }
+
+        function parseMsg(key, id, msg) {
+          for (let i in msg) {
+            if (msg[i].type === "heading") {
+              $(`#${key}-heading-content-${id}`).val(msg[i].content);
+            } else if (msg[i].type === "text") {
+              $(`#${key}-text-content-${id}`).val(msg[i].content);
+            }
+          }
+        }
+      }
+
+      function addNewFormDiv(val) {
+        $("#msg").append(
+          `<div class="form-group ${val}">` +
+            '<div class="form-group row">' +
+              '<div class="col-sm-12">' +
+                `<label for="msg-id-${val}" class="col-sm-2">Viestin tunniste</label>` +
+                `<input type="text" class="col-sm-9" id="msg-id-${val}" />` +
+                `<label id="btn-${val}" class="col-sm-1 x" align="middle" onclick="removeFormDiv(event);">Poista</label>` +
+              '</div>' +
+            '</div>' +
+            '<div class="form-group row">' +
+              '<div class="col-sm-12">' +
+                `<label for="fi-heading-content-${val}" class="col-sm-2">Otsikko (fi)</label>` +
+                `<input type="text" class="col-sm-10" id="fi-heading-content-${val}" />` +
+              '</div>' +
+
+              '<div class="col-sm-12">' +
+                `<label for="fi-text-content-${val}" class="col-sm-2">Teksti (fi)</label>` +
+                `<input type="text" class="col-sm-10" id="fi-text-content-${val}" />` +
+              '</div>' +
+            '</div>' +
+            '<div class="form-group row">' +
+              '<div class="col-sm-12">' +
+                `<label for="en-heading-content-${val}" class="col-sm-2">Otsikko (en)</label>` +
+                `<input type="text" class="col-sm-10" id="en-heading-content-${val}" />` +
+              '</div>' +
+
+              '<div class="col-sm-12">' +
+                `<label for="en-text-content-${val}" class="col-sm-2">Teksti (en)</label>` +
+                `<input type="text" class="col-sm-10" id="en-text-content-${val}" />` +
+              '</div>' +
+            '</div>' +
+            '<div class="form-group row">' +
+              '<div class="col-sm-12">' +
+                `<label for="sv-heading-content-${val}" class="col-sm-2">Otsikko (sv)</label>` +
+                `<input type="text" class="col-sm-10" id="sv-heading-content-${val}" />` +
+              '</div>' +
+
+              '<div class="col-sm-12">' +
+                `<label for="sv-text-content-${val}" class="col-sm-2">Teksti (sv)</label>` +
+                `<input type="text" class="col-sm-10" id="sv-text-content-${val}" />` +
+              '</div>' +
+            '</div>' +
+            '<hr />' +
+          '</div>'
+        );
+
+        // for every change update the value to the form and the message
+        $("#msg :input").change(function(e) {
+          src = e.target.id;
+          update = $(this).val();
+
+          // updates the values to the form
+          $(`#${src}`).val(update);
+
+          for (let i = 0; i < msg.staticMessages.length; i++) {
+            if (src.includes('msg-id') && src.includes(msg.staticMessages[i].id)) {
+              // update the form id's
+              $(`#fi-heading-content-${msg.staticMessages[i].id}`).attr('id', `fi-heading-content-${update}`);
+              $(`#en-heading-content-${msg.staticMessages[i].id}`).attr('id', `en-heading-content-${update}`);
+              $(`#sv-heading-content-${msg.staticMessages[i].id}`).attr('id', `sv-heading-content-${update}`);
+              $(`#fi-text-content-${msg.staticMessages[i].id}`).attr('id', `fi-text-content-${update}`);
+              $(`#en-text-content-${msg.staticMessages[i].id}`).attr('id', `en-text-content-${update}`);
+              $(`#sv-text-content-${msg.staticMessages[i].id}`).attr('id', `sv-text-content-${update}`);
+              $(`.${msg.staticMessages[i].id}`).attr('class', `${update}`);
+              $(`#btn-${msg.staticMessages[i].id}`).attr('id', `btn-${update}`);
+              $(`#${src}`).attr('id', `msg-id-${update}`);
+
+              // update the message content & and remove white-space
+              msg.staticMessages[i].id = update.replace(/ /g,'');
+              return;
+
+            } else {
+              if (src.includes("heading") && src.includes(msg.staticMessages[i].id)) {
+                msg.staticMessages[i].content[src.substring(0, 2)][0].content = update;
+                return;
+              } else if (src.includes("text") && src.includes(msg.staticMessages[i].id)) {
+                msg.staticMessages[i].content[src.substring(0, 2)][1].content = update;
+                return;
+              }
+            }
+          }
+        });
+      }
+
+      function removeFormDiv(e) {
+        if (e.keyCode === 13) { e.preventDefault(); }
+        id = e.target.id.substring(4, (e.target.id).toString().length);
+
+        // Remove the message div
+        $("." + id).fadeOut(300, () => { $(this).remove(); });
+
+        // Remove message from the json
+        for (let i = 0; i < msg.staticMessages.length; i++) {
+          if (msg.staticMessages[i].id === id) {
+            msg.staticMessages.splice(i, 1);
+            break;
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
