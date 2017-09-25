@@ -10,6 +10,7 @@ from tornado.web import url
 import handlers.index
 
 define("port", default=8900, help="run on the given port", type=int)
+# TODO tiedoston nimi ja archiven polku
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -31,7 +32,7 @@ def main():
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
 
-    print("Listening on port: 5000")
+    print("Listening on port: 8900")
     tornado.autoreload.start()
 
     tornado.ioloop.IOLoop.instance().start()

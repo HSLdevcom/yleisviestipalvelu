@@ -35,4 +35,4 @@ class CopyJson(tornado.web.RequestHandler):
 
         # open existing file and overwrite it with new json
         with open(filename, 'w') as outfile:
-            json.dump(data, codecs.getwriter('utf-8')(outfile), ensure_ascii=False)
+            json.dump(data, outfile)
