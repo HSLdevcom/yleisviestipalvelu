@@ -11,7 +11,7 @@ class ViewJson(tornado.web.RequestHandler):
         with open(options.filename) as data_file:
             data = json.load(data_file)
 
-        self.write(json.dumps(data, ensure_ascii=False))
+        self.write(json.dumps(data, indent=4, ensure_ascii=False))
 
 class ViewEdit(tornado.web.RequestHandler):
     def get(self):
