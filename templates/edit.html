@@ -6,57 +6,7 @@
 
     <link rel='stylesheet' href='static/css/jquery-ui.min.css' />
     <link rel='stylesheet' href='static/css/bootstrap.min.css' />
-
-    <style>
-      body, head {
-        margin: 5px;
-      }
-
-      .x {
-        cursor: default;
-      }
-
-      .x:hover {
-        color: red;
-      }
-
-      #header {
-        height: 70px;
-        line-height: 70px;
-        width: 100%;
-        text-align: center;
-      }
-
-      #msgForm {
-        width: 100%;
-      }
-
-      #msg {
-        position: absolute;
-        width: 100%;
-        height: calc(100% - 80px);
-        bottom: 0px;
-        padding: 10px 10px 0 0;
-        margin-bottom: 5px;
-        width: calc(100% - 10px);
-        overflow-y: auto;
-        overflow-x: hidden;
-        border: solid 1px;
-      }
-
-      #rawJsonFlow {
-        height: 635px;
-        width: 750px;
-        margin-left: -50px;
-      }
-
-      #rawJsonBody {
-        position: relative;
-        width: 100%;
-        height: 500px;
-        overflow-y: auto;
-      }
-    </style>
+    <link rel='stylesheet' href='static/css/edit.css' />
   </head>
   <body>
     <div id="header">
@@ -183,7 +133,7 @@
 
       function addNewFormDiv(val) {
         $("#msg").append(
-          `<div class="form-group ${val}">` +
+          `<div class="form-group ${val} msgEntity">` +
             '<div class="form-group row">' +
               '<div class="col-sm-12">' +
                 `<label for="msg-id-${val}" class="col-sm-2">Viestin tunniste</label>` +
@@ -191,40 +141,39 @@
                 `<label id="btn-${val}" class="col-sm-1 x" align="middle" onclick="removeFormDiv(event);">Poista</label>` +
               '</div>' +
             '</div>' +
-            '<div class="form-group row">' +
+            '<div class="form-group row inputEntity">' +
               '<div class="col-sm-12">' +
                 `<label for="fi-heading-content-${val}" class="col-sm-2">Otsikko (fi)</label>` +
                 `<input type="text" class="col-sm-10" id="fi-heading-content-${val}" />` +
               '</div>' +
-
+              '<label class="col-sm-12"></label>' +
               '<div class="col-sm-12">' +
                 `<label for="fi-text-content-${val}" class="col-sm-2">Teksti (fi)</label>` +
                 `<input type="text" class="col-sm-10" id="fi-text-content-${val}" />` +
               '</div>' +
             '</div>' +
-            '<div class="form-group row">' +
+            '<div class="form-group row inputEntity">' +
               '<div class="col-sm-12">' +
                 `<label for="en-heading-content-${val}" class="col-sm-2">Otsikko (en)</label>` +
                 `<input type="text" class="col-sm-10" id="en-heading-content-${val}" />` +
               '</div>' +
-
+              '<label class="col-sm-12"></label>' +
               '<div class="col-sm-12">' +
                 `<label for="en-text-content-${val}" class="col-sm-2">Teksti (en)</label>` +
                 `<input type="text" class="col-sm-10" id="en-text-content-${val}" />` +
               '</div>' +
             '</div>' +
-            '<div class="form-group row">' +
+            '<div class="form-group row inputEntity">' +
               '<div class="col-sm-12">' +
                 `<label for="sv-heading-content-${val}" class="col-sm-2">Otsikko (sv)</label>` +
                 `<input type="text" class="col-sm-10" id="sv-heading-content-${val}" />` +
               '</div>' +
-
+              '<label class="col-sm-12"></label>' +
               '<div class="col-sm-12">' +
                 `<label for="sv-text-content-${val}" class="col-sm-2">Teksti (sv)</label>` +
                 `<input type="text" class="col-sm-10" id="sv-text-content-${val}" />` +
               '</div>' +
             '</div>' +
-            '<hr />' +
           '</div>'
         );
 
