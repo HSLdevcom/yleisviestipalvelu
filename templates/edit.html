@@ -45,8 +45,8 @@
     <script src='static/js/bootstrap.min.js'></script>
     <script src='static/js/moment-2.18.1.js'></script>
     <script>
-      let msg = JSON.parse('{% raw json %}');
-
+      var msg = JSON.parse('{% raw json %}');
+      if (msg.staticMessages === undefined) msg = {staticMessages:[]}
       // check if the message already contains some content, if so render them to the form
       if (msg.staticMessages.length !== 0) { addContentToFormDiv(msg.staticMessages); }
 
@@ -93,7 +93,7 @@
         if (confirm("Oletko varma? (korvaa olemassa olevan viestin)") == true) {
           $.ajax({
             type: "POST",
-            url: "/copyJson",
+            url: "copyJson",
             contentType : 'application/json;charset=utf-8',
             data: (msg.staticMessages.length === 0) ? JSON.stringify({ "staticMessages": []}) : JSON.stringify(msg),
             success: () => { console.log('Ylikirjaus ja kopiointi onnistui!'); }
@@ -109,11 +109,11 @@
 
       function addContentToFormDiv(msg) {
         // Loop through individual list in the staticMessages array
-        for (let i = 0; i < msg.length; i++) {
+        for (var i = 0; i < msg.length; i++) {
           addNewFormDiv(msg[i].id);
           $(`#msg-id-${msg[i].id}`).val(msg[i].id);
 
-          for (let key in msg[i].content) {
+          for (var key in msg[i].content) {
             if (msg[i].content.hasOwnProperty(key)) {
               parseMsg(key, msg[i].id, msg[i].content[key]);
             }
@@ -121,7 +121,7 @@
         }
 
         function parseMsg(key, id, msg) {
-          for (let i in msg) {
+          for (var i in msg) {
             if (msg[i].type === "heading") {
               $(`#${key}-heading-content-${id}`).val(msg[i].content);
             } else if (msg[i].type === "text") {
@@ -185,7 +185,7 @@
           // updates the values to the form
           $(`#${src}`).val(update);
 
-          for (let i = 0; i < msg.staticMessages.length; i++) {
+          for (var i = 0; i < msg.staticMessages.length; i++) {
             if (src.includes('msg-id') && src.includes(msg.staticMessages[i].id)) {
               // update the form id's
               $(`#fi-heading-content-${msg.staticMessages[i].id}`).attr('id', `fi-heading-content-${update}`);
@@ -223,7 +223,7 @@
         $("." + id).fadeOut(300, () => { $(this).remove(); });
 
         // Remove message from the json
-        for (let i = 0; i < msg.staticMessages.length; i++) {
+        for (var i = 0; i < msg.staticMessages.length; i++) {
           if (msg.staticMessages[i].id === id) {
             msg.staticMessages.splice(i, 1);
             break;
