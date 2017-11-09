@@ -1,5 +1,7 @@
 FROM nginx:mainline-alpine
 
+ENV HTPASSWD='yleisviesti:$apr1$sM6OuSuR$aQ3xduEKmpDBmFx.QqrR1/'
+
 RUN apk add --no-cache python
 ADD https://bootstrap.pypa.io/get-pip.py get-pip.py
 
