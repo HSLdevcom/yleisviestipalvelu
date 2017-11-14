@@ -10,8 +10,12 @@ class ViewJson(tornado.web.RequestHandler):
     def get(self):
         with open(options.filename) as data_file:
             data = json.load(data_file)
+            
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
 
-        self.write(json.dumps(data, indent=4, ensure_ascii=False))
+        self.write(data)
 
 class ViewEdit(tornado.web.RequestHandler):
     def get(self):
