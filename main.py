@@ -34,6 +34,7 @@ def main():
 
     print("Listening on port: " + str(options.port))
     tornado.autoreload.start()
+    tornado.autoreload.watch('templates/edit.html')
 
     tornado.ioloop.IOLoop.instance().start()
 
