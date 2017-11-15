@@ -1,235 +1,175 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>{{ title }}</title>
+<head>
+  <meta charset="utf-8"/>
+  <title>Yleisviestin muokkaus</title>
 
-    <link rel='stylesheet' href='static/css/jquery-ui.min.css' />
-    <link rel='stylesheet' href='static/css/bootstrap.min.css' />
-    <link rel='stylesheet' href='static/css/edit.css' />
-  </head>
-  <body>
-    <div id="header">
-      <div class="col-sm-4" align="left">
-        <h3>Yleisviestin muokkaus</h3>
-      </div>
-      <div class="col-sm-8" align="right">
-        <button id="newMsg" class="btn btn-primary">Lisää uusi viesti</button>
-        <button id="emptyMsg" class="btn btn-danger">Tyhjennä</button>
-        <button id="confirmMsg" class="btn btn-warning">Vahvista muutokset</button>
-        <button id="showRawMsg" class="btn btn-default">Näytä raaka aineisto</button>
+  <link rel='stylesheet' href='static/css/jquery-ui.min.css'/>
+  <link rel='stylesheet' href='static/css/bootstrap.min.css'/>
+  <link rel='stylesheet' href='static/css/edit.css'/>
+</head>
+<body>
+
+
+<div id="app" class="container-fluid">
+  <div id="header" class="row">
+    <div class="col-sm-5" align="left">
+      <h3>Yleisviestin muokkaus</h3>
+    </div>
+    <div class="col-sm-7" align="right">
+      <button id="newMsg" class="btn btn-sm btn-primary" @click="addNewMessage">Lisää uusi viesti</button>
+      <button id="emptyMsg" class="btn btn-sm btn-danger" @click="staticMessages=[]">Tyhjennä</button>
+      <button id="confirmMsg" class="btn btn-sm btn-warning" @click="saveMessages">Tallenna muutokset</button>
+      <button id="showRawMsg" class="btn btn-sm btn-default" data-toggle="modal" data-target="#msgModal">Näytä raaka
+        aineisto
+      </button>
+    </div>
+  </div>
+  <div class="row">
+    <div id="msgform" class="col">
+      <div v-for="msg in staticMessages" class="card m-2 p-1">
+        <div class="form-group">
+          <label>Viestin tunnus
+            <input class="form-control" v-model="msg.id"></label>
+        </div>
+        <div class="form-row">
+          <div class="form-group col">
+            <label>Prioriteetti
+              <input class="form-control" type="number" v-model="msg.priority"></label>
+          </div>
+          <div class="form-group col">
+            <label>Näkyvyys
+              <select class="form-control" v-model="msg.persistence">
+                <option value="once">Näytä kerran</option>
+                <option value="repeat">Toistuva</option>
+              </select></label>
+          </div>
+          <div class="form-group col">
+            <label>Tyyppi
+              <select class="form-control" v-model="msg.type">
+                <option value="info">Info</option>
+                <option value="error">Virhe</option>
+              </select></label>
+          </div>
+          <div class="form-group col">
+            <label>Ikoni
+              <select class="form-control" v-model="msg.icon">
+                <option value="info">Info</option>
+                <option value="geonotifier">Sijainti-info</option>
+              </select></label>
+          </div>
+        </div>
+        <fieldset v-for="langcode in langcodes" class="card m-1 p-1">
+          <legend>Kieliversio: {{langcode}}</legend>
+          <small>Raahaa kenttiä muuttaaksesi järjestystä</small>
+          <draggable v-model="msg.content[langcode]" :options="{draggable:'.field'}">
+            <div class="row field border border-secondary m-1 p-1" v-for="cont in msg.content[langcode]">
+
+              <div class="form-group col-sm-1">
+                <label>Kenttä:</label><select class="form-control" v-model="cont.type">
+                <option value="heading">Otsikko</option>
+                <option value="text">Teksti</option>
+                <option value="a">Linkki</option>
+              </select>
+              </div>
+              <div class="form-group col">
+                <label>Sisältö:</label><input class="form-control" v-model="cont.content">
+              </div>
+              <div class="form-group col" v-if="cont.type==='a'">
+                <label>Linkin osoite:</label><input class="form-control" v-model="cont.href">
+              </div>
+            </div>
+          </draggable>
+          <button class="btn btn-sm btn-outline-success" @click="msg.content[langcode].push({type:null,content:null})">
+            Lisää uusi kenttä
+          </button>
+        </fieldset>
       </div>
     </div>
+  </div>
+  <div class="modal fade" id="msgModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Yleisviestin sisältö raakana</h3>
+        </div>
 
-    <div id="msgform">
-      <form id="msg"></form>
-    </div>
-
-    <div class="modal fade" id="rawJson">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content" id="rawJsonFlow">
-          <div class="modal-header">
-            <h3 class="modal-title">Yleisviestin sisältö raakana</h5>
-          </div>
-          <div class="modal-body" id="rawJsonBody">
-            <pre id="json"></pre>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Sulje</button>
-          </div>
+        <div class="modal-body">
+          <pre>{{rawMessage}}</pre>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-default-button" data-dismiss="modal">Sulje</button>
         </div>
       </div>
     </div>
+  </div>
+</div>
 
-    <script src='static/js/jquery-2.2.4.min.js'></script>
-    <script src='static/js/bootstrap.min.js'></script>
-    <script src='static/js/moment-2.18.1.js'></script>
-    <script>
-      var msg = JSON.parse('{% raw json %}');
-      if (msg.staticMessages === undefined) msg = {staticMessages:[]}
-      // check if the message already contains some content, if so render them to the form
-      if (msg.staticMessages.length !== 0) { addContentToFormDiv(msg.staticMessages); }
 
-      $("#newMsg").click((e) => {
-        if (e.keyCode === 13) { e.preventDefault(); }
-        id = moment().format("DDMMYYYY_HHmmss_SS").toString();
+<script src='static/js/jquery-2.2.4.min.js'></script>
+<script src='static/js/bootstrap.bundle.min.js'></script>
+<script src='static/js/moment-2.18.1.js'></script>
+<script src='static/js/lodash.min.js'></script>
+<script src='static/js/vue.js'></script>
+<script src="//cdn.jsdelivr.net/npm/sortablejs@1.7.0/Sortable.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.15.0/vuedraggable.min.js"></script>
+<script>
+  Vue.component('modal', {
+    template: '#modal-template'
+  })
+  const app = new Vue({
+    el: '#app',
+    data: {
+      langcodes: ['fi', 'en', 'sv'],
+      staticMessages: [],
+      showModal: false
+    },
+    computed: {
+      rawMessage: function () {
+        return JSON.stringify({staticMessages: this.staticMessages}, null, 4)
+      }
+    },
+    methods: {
+      getInitialMessages: function () {
+        const self = this
+        $.getJSON('/', function (data) {
+          if (data.staticMessages === undefined) return false
+          data.staticMessages.forEach(function (msg) {
+            self.staticMessages.push(msg)
+          })
+        })
+      },
+      addNewMessage: function () {
+        const newId = moment().format('DDMMYYYY_HHmmss_SS').toString()
+        let newMsg = {
+          id: newId,
+          content: {}
 
-        // add new message to the modifiable message list
-        msg.staticMessages.push(
-          {
-            "id": `${id}`,
-            "content": {
-              "fi": [
-                { "content": "", "type": "heading" },
-                { "content": "", "type": "text"}
-              ],
-              "en": [
-                { "content": "", "type": "heading" },
-                { "content": "", "type": "text" }
-              ],
-              "sv": [
-                { "content": "", "type": "heading" },
-                { "content": "", "type": "text" }
-              ]
-            }
-          }
-        );
+        }
+        this.langcodes.forEach(function (lc) {
+          newMsg.content[lc] = []
+        })
 
-        // add new form div to the form
-        addNewFormDiv(id);
-
-        // update the message id value to the form
-        $(`#msg-id-${id}`).val(id);
-      });
-
-      $("#emptyMsg").click((e) => {
-        if (e.keyCode === 13) { e.preventDefault(); }
-        $("#msg").empty();
-        msg = { "staticMessages": [] };
-      });
-
-      $("#confirmMsg").click((e) => {
-        if (e.keyCode === 13) { e.preventDefault(); }
-        if (confirm("Oletko varma? (korvaa olemassa olevan viestin)") == true) {
+        this.staticMessages.push(newMsg)
+      },
+      saveMessages: function () {
+        if (confirm('Oletko varma? (korvaa olemassa olevan viestin)') === true) {
           $.ajax({
-            type: "POST",
-            url: "copyJson",
-            contentType : 'application/json;charset=utf-8',
-            data: (msg.staticMessages.length === 0) ? JSON.stringify({ "staticMessages": []}) : JSON.stringify(msg),
-            success: () => { console.log('Ylikirjaus ja kopiointi onnistui!'); }
-          });
-        }
-      });
-
-      $("#showRawMsg").click((e) => {
-        if (e.keyCode === 13) { e.preventDefault(); }
-        $("#json").text(JSON.stringify(msg, null, 2));
-        $('#rawJson').modal('show');
-      })
-
-      function addContentToFormDiv(msg) {
-        // Loop through individual list in the staticMessages array
-        for (var i = 0; i < msg.length; i++) {
-          addNewFormDiv(msg[i].id);
-          $(`#msg-id-${msg[i].id}`).val(msg[i].id);
-
-          for (var key in msg[i].content) {
-            if (msg[i].content.hasOwnProperty(key)) {
-              parseMsg(key, msg[i].id, msg[i].content[key]);
+            type: 'POST',
+            url: 'copyJson',
+            contentType: 'application/json;charset=utf-8',
+            data: this.rawMessage,
+            success: function () {
+              console.log('Tallennus onnistui')
             }
-          }
-        }
-
-        function parseMsg(key, id, msg) {
-          for (var i in msg) {
-            if (msg[i].type === "heading") {
-              $(`#${key}-heading-content-${id}`).val(msg[i].content);
-            } else if (msg[i].type === "text") {
-              $(`#${key}-text-content-${id}`).val(msg[i].content);
-            }
-          }
+          })
         }
       }
-
-      function addNewFormDiv(val) {
-        $("#msg").append(
-          `<div class="form-group ${val} msgEntity">` +
-            '<div class="form-group row">' +
-              '<div class="col-sm-12">' +
-                `<label for="msg-id-${val}" class="col-sm-2">Viestin tunniste</label>` +
-                `<input type="text" class="col-sm-9" id="msg-id-${val}" />` +
-                `<label id="btn-${val}" class="col-sm-1 x" align="middle" onclick="removeFormDiv(event);">Poista</label>` +
-              '</div>' +
-            '</div>' +
-            '<div class="form-group row inputEntity">' +
-              '<div class="col-sm-12">' +
-                `<label for="fi-heading-content-${val}" class="col-sm-2">Otsikko (fi)</label>` +
-                `<input type="text" class="col-sm-10" id="fi-heading-content-${val}" />` +
-              '</div>' +
-              '<label class="col-sm-12"></label>' +
-              '<div class="col-sm-12">' +
-                `<label for="fi-text-content-${val}" class="col-sm-2">Teksti (fi)</label>` +
-                `<input type="text" class="col-sm-10" id="fi-text-content-${val}" />` +
-              '</div>' +
-            '</div>' +
-            '<div class="form-group row inputEntity">' +
-              '<div class="col-sm-12">' +
-                `<label for="en-heading-content-${val}" class="col-sm-2">Otsikko (en)</label>` +
-                `<input type="text" class="col-sm-10" id="en-heading-content-${val}" />` +
-              '</div>' +
-              '<label class="col-sm-12"></label>' +
-              '<div class="col-sm-12">' +
-                `<label for="en-text-content-${val}" class="col-sm-2">Teksti (en)</label>` +
-                `<input type="text" class="col-sm-10" id="en-text-content-${val}" />` +
-              '</div>' +
-            '</div>' +
-            '<div class="form-group row inputEntity">' +
-              '<div class="col-sm-12">' +
-                `<label for="sv-heading-content-${val}" class="col-sm-2">Otsikko (sv)</label>` +
-                `<input type="text" class="col-sm-10" id="sv-heading-content-${val}" />` +
-              '</div>' +
-              '<label class="col-sm-12"></label>' +
-              '<div class="col-sm-12">' +
-                `<label for="sv-text-content-${val}" class="col-sm-2">Teksti (sv)</label>` +
-                `<input type="text" class="col-sm-10" id="sv-text-content-${val}" />` +
-              '</div>' +
-            '</div>' +
-          '</div>'
-        );
-
-        // for every change update the value to the form and the message
-        $("#msg :input").change(function(e) {
-          src = e.target.id;
-          update = $(this).val();
-
-          // updates the values to the form
-          $(`#${src}`).val(update);
-
-          for (var i = 0; i < msg.staticMessages.length; i++) {
-            if (src.includes('msg-id') && src.includes(msg.staticMessages[i].id)) {
-              // update the form id's
-              $(`#fi-heading-content-${msg.staticMessages[i].id}`).attr('id', `fi-heading-content-${update}`);
-              $(`#en-heading-content-${msg.staticMessages[i].id}`).attr('id', `en-heading-content-${update}`);
-              $(`#sv-heading-content-${msg.staticMessages[i].id}`).attr('id', `sv-heading-content-${update}`);
-              $(`#fi-text-content-${msg.staticMessages[i].id}`).attr('id', `fi-text-content-${update}`);
-              $(`#en-text-content-${msg.staticMessages[i].id}`).attr('id', `en-text-content-${update}`);
-              $(`#sv-text-content-${msg.staticMessages[i].id}`).attr('id', `sv-text-content-${update}`);
-              $(`.${msg.staticMessages[i].id}`).attr('class', `${update}`);
-              $(`#btn-${msg.staticMessages[i].id}`).attr('id', `btn-${update}`);
-              $(`#${src}`).attr('id', `msg-id-${update}`);
-
-              // update the message content & and remove white-space
-              msg.staticMessages[i].id = update.replace(/ /g,'');
-              return;
-
-            } else {
-              if (src.includes("heading") && src.includes(msg.staticMessages[i].id)) {
-                msg.staticMessages[i].content[src.substring(0, 2)][0].content = update;
-                return;
-              } else if (src.includes("text") && src.includes(msg.staticMessages[i].id)) {
-                msg.staticMessages[i].content[src.substring(0, 2)][1].content = update;
-                return;
-              }
-            }
-          }
-        });
-      }
-
-      function removeFormDiv(e) {
-        if (e.keyCode === 13) { e.preventDefault(); }
-        id = e.target.id.substring(4, (e.target.id).toString().length);
-
-        // Remove the message div
-        $("." + id).fadeOut(300, () => { $(this).remove(); });
-
-        // Remove message from the json
-        for (var i = 0; i < msg.staticMessages.length; i++) {
-          if (msg.staticMessages[i].id === id) {
-            msg.staticMessages.splice(i, 1);
-            break;
-          }
-        }
-      }
-    </script>
-  </body>
+    },
+    created: function () {
+      this.getInitialMessages()
+    }
+  })
+</script>
+</body>
 </html>

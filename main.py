@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import os
 import tornado.httpserver
 import tornado.ioloop
@@ -30,8 +32,9 @@ def main():
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
 
-    print "Listening on port: " + str(options.port)
+    print("Listening on port: " + str(options.port))
     tornado.autoreload.start()
+    tornado.autoreload.watch('templates/edit.html')
 
     tornado.ioloop.IOLoop.instance().start()
 
