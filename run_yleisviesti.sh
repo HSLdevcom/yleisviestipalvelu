@@ -1,9 +1,13 @@
 #!/bin/sh
+
+set -e
+
 cd yleisviestipalvelu
 mkdir -p messages/archive
-echo "{\"staticMessages\": []}" > messages/yleisviesti.json
-python main.py --port=8900 --filename=messages/yleisviesti.json --filepath=messages/archive & > /dev/null
 
-echo ${HTPASSWD} > /etc/nginx/auth.htpasswd
+echo "${HTPASSWD}" > /etc/nginx/auth.htpasswd
+echo '{"staticMessages": []}' > messages/yleisviesti.json
 
-nginx
+python main.py --port=${PORT} --filename=messages/yleisviesti.json --filepath=messages/archive &
+
+/usr/sbin/nginx
