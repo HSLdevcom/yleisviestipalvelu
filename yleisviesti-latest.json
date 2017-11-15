@@ -1,1 +1,1 @@
-{"staticMessages": [{"id": "14112017_162155_41", "content": {"fi": [{"type": "heading", "content": "testi"}], "en": [], "sv": []}, "priority": "0"}]}
+{"staticMessages": [{"id": "14112017_162155_41", "content": {"fi": [{"type": "heading", "content": "testi"}, {"type": "text", "content": "teksti"}, {"type": "a", "content": "koe", "href": "http://www.karttakeskus.fi"}, {"type": "text", "content": "Lis\u00e4\u00e4 teksti\u00e4"}], "en": [], "sv": []}, "priority": "0", "type": "info", "icon": "info", "persistence": "repeat"}]}
