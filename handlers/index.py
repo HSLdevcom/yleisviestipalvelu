@@ -6,23 +6,26 @@ import settings
 
 from tornado.options import options
 
+
 class ViewJson(tornado.web.RequestHandler):
     def get(self):
         with open(options.filename) as data_file:
             data = json.load(data_file)
 
-        self.write(json.dumps(data, indent=4, ensure_ascii=False))
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+
+        self.write(data)
+
 
 class ViewEdit(tornado.web.RequestHandler):
     def get(self):
-        with open(options.filename) as data_file:
-            data = json.load(data_file)
+        with open("templates/edit.html",'rb') as tpl_file:
+            self.write(tpl_file.read())
 
-        self.render(
-            "../templates/edit.html",
-            title="Yleisviestin muokkaus",
-            json=json.dumps(data)
-        )
+
+
 
 class CopyJson(tornado.web.RequestHandler):
     def post(self):
