@@ -16,14 +16,8 @@ class ViewJson(web.RequestHandler):
 
 class ViewEdit(web.RequestHandler):
     def get(self):
-        with open(options.filename) as data_file:
-            data = json.load(data_file)
-
-        self.render(
-            "../templates/edit.html",
-            title="Yleisviestin muokkaus",
-            json=json.dumps(data)
-        )
+        with open("templates/edit.html",'rb') as tpl_file:
+            self.write(tpl_file.read())
 
 
 class CopyJson(web.RequestHandler):
