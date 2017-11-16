@@ -1,5 +1,5 @@
+from __future__ import print_function
 from os.path import dirname, join
-
 import handlers.index
 import settings  # pylint: disable=unused-import
 
@@ -29,7 +29,7 @@ def main():
     http_server = httpserver.HTTPServer(Application())
     http_server.listen(options.port)
 
-    print "Listening on port: " + str(options.port)
+    print("Listening on port: " + str(options.port))
     autoreload.start()
 
     ioloop.IOLoop.instance().start()
