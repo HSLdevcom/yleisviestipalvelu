@@ -1,16 +1,14 @@
-import os
-import tornado.httpserver
-import tornado.ioloop
-import tornado.web
-import tornado.autoreload
-import settings
-
-from tornado.options import define, options
-from tornado.web import url
+from os.path import dirname, join
 
 import handlers.index
+import settings  # pylint: disable=unused-import
 
-class Application(tornado.web.Application):
+from tornado import autoreload, httpserver, ioloop, web
+from tornado.options import options
+from tornado.web import url
+
+
+class Application(web.Application):
     def __init__(self):
         routes = [
             url(r"/", handlers.index.ViewJson, name='index'),
@@ -18,22 +16,24 @@ class Application(tornado.web.Application):
             url(r"/copyJson", handlers.index.CopyJson, name='kopioi')
         ]
 
-        settings = dict(
-            template_path=os.path.join(os.path.dirname(__file__), "templates"),
-            static_path=os.path.join(os.path.dirname(__file__), "static")
+        config = dict(
+            template_path=join(dirname(__file__), "templates"),
+            static_path=join(dirname(__file__), "static")
         )
 
-        tornado.web.Application.__init__(self, routes, **settings)
+        web.Application.__init__(self, routes, **config)
+
 
 def main():
-    tornado.options.parse_command_line()
-    http_server = tornado.httpserver.HTTPServer(Application())
+    options.parse_command_line()
+    http_server = httpserver.HTTPServer(Application())
     http_server.listen(options.port)
 
     print "Listening on port: " + str(options.port)
-    tornado.autoreload.start()
+    autoreload.start()
 
-    tornado.ioloop.IOLoop.instance().start()
+    ioloop.IOLoop.instance().start()
+
 
 if __name__ == "__main__":
     main()
