@@ -10,6 +10,6 @@ COPY . /yleisviestipalvelu
 
 RUN chmod +x run_yleisviesti.sh
 
-EXPOSE 80
+EXPOSE 8080
 
 CMD ["./run_yleisviesti.sh"]
