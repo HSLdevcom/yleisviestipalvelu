@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/HSLdevcom/yleisviestipalvelu.svg?branch=master)](https://travis-ci.org/HSLdevcom/yleisviestipalvelu)
 
 ## yleisviestipalvelu
 
