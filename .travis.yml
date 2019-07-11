@@ -10,4 +10,4 @@ services: docker
 language: bash
 
 script:
-- /build-docker-image.sh
+- ./build-docker-image.sh
