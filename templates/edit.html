@@ -1,181 +1,245 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta charset="utf-8"/>
+  <meta charset="utf-8" />
   <title>Yleisviestin muokkaus</title>
 
-  <link rel='stylesheet' href='static/css/jquery-ui.min.css'/>
-  <link rel='stylesheet' href='static/css/bootstrap.min.css'/>
-  <link rel='stylesheet' href='static/css/edit.css'/>
+  <link rel='stylesheet' href='static/css/jquery-ui.min.css' />
+  <link rel='stylesheet' href='static/css/bootstrap.min.css' />
+  <link rel='stylesheet' href='static/css/edit.css' />
+  <style>
+    input[type=color].form-control::-webkit-color-swatch-wrapper {
+      padding: 0px;
+    }
+  </style>
 </head>
+
 <body>
 
 
-<div id="app" class="container-fluid">
-  <div id="header" class="row">
-    <div class="col-sm-5" align="left">
-      <h3>Yleisviestin muokkaus</h3>
+  <div id="app" class="container-fluid">
+    <div id="header" class="row">
+      <div class="col-sm-5" align="left">
+        <h3>Yleisviestin muokkaus</h3>
+      </div>
+      <div class="col-sm-7" align="right">
+        <button id="newMsg" class="btn btn-sm btn-primary" @click="addNewMessage">Lisää uusi viesti</button>
+        <button id="emptyMsg" class="btn btn-sm btn-danger" @click="staticMessages=[]">Tyhjennä</button>
+        <button id="confirmMsg" class="btn btn-sm btn-warning" @click="saveMessages">Tallenna muutokset</button>
+        <button id="showRawMsg" class="btn btn-sm btn-default" data-toggle="modal" data-target="#msgModal">Näytä raaka
+          aineisto
+        </button>
+      </div>
     </div>
-    <div class="col-sm-7" align="right">
-      <button id="newMsg" class="btn btn-sm btn-primary" @click="addNewMessage">Lisää uusi viesti</button>
-      <button id="emptyMsg" class="btn btn-sm btn-danger" @click="staticMessages=[]">Tyhjennä</button>
-      <button id="confirmMsg" class="btn btn-sm btn-warning" @click="saveMessages">Tallenna muutokset</button>
-      <button id="showRawMsg" class="btn btn-sm btn-default" data-toggle="modal" data-target="#msgModal">Näytä raaka
-        aineisto
-      </button>
-    </div>
-  </div>
-  <div class="row">
-    <div id="msgform" class="col">
-      <div v-for="(msg,k) in staticMessages" class="card m-2 p-1">
-        <div class="float-right text-right">
-          <button class="btn btn-sm btn-outline-danger" @click="removeMessage(k)">Poista viesti</button>
-        </div>
-        <div class="form-group">
-          <label>Viestin tunnus
-            <input class="form-control" v-model="msg.id"></label>
-        </div>
-        <div class="form-row">
-          <div class="form-group col">
-            <label>Prioriteetti
-              <input class="form-control" type="number" v-model="msg.priority"></label>
+    <div class="row">
+      <div id="msgform" class="col">
+        <div v-for="(msg,k) in staticMessages" class="card m-2 p-1">
+          Tähdellä (*) merkityt ovat pakollisia
+          <div class="float-right text-right">
+            <button class="btn btn-sm btn-outline-danger" @click="removeMessage(k)">Poista viesti</button>
           </div>
-          <div class="form-group col">
-            <label>Näkyvyys
-              <select class="form-control" v-model="msg.persistence">
-                <option value="once">Näytä kerran</option>
-                <option value="repeat">Toistuva</option>
-              </select></label>
+          <div class="form-group">
+            <label>Viestin tunnus
+              <input class="form-control" v-model="msg.id"></label>
           </div>
-          <div class="form-group col">
-            <label>Tyyppi
-              <select class="form-control" v-model="msg.type">
-                <option value="info">Info</option>
-                <option value="error">Virhe</option>
-              </select></label>
-          </div>
-          <div class="form-group col">
-            <label>Ikoni
-              <select class="form-control" v-model="msg.icon">
-                <option value="info">Info</option>
-                <option value="geonotifier">Sijainti-info</option>
-              </select></label>
-          </div>
-        </div>
-        <fieldset v-for="langcode in langcodes" class="card m-1 p-1">
-          <legend>Kieliversio: {{langcode}}</legend>
-          <small>Raahaa kenttiä muuttaaksesi järjestystä</small>
-          <draggable v-model="msg.content[langcode]" :options="{draggable:'.field'}">
-            <div class="row field border border-secondary m-1 p-1" v-for="cont in msg.content[langcode]">
-
-              <div class="form-group col-sm-1">
-                <label>Kenttä:</label><select class="form-control" v-model="cont.type">
-                <option value="heading">Otsikko</option>
-                <option value="text">Teksti</option>
-                <option value="a">Linkki</option>
-              </select>
-              </div>
-              <div class="form-group col">
-                <label>Sisältö:</label><input class="form-control" v-model="cont.content">
-              </div>
-              <div class="form-group col" v-if="cont.type==='a'">
-                <label>Linkin osoite:</label><input class="form-control" v-model="cont.href">
-              </div>
+          <div class="form-row">
+            <div class="form-group col">
+              <label>Prioriteetti*
+                <input class="form-control" type="number" v-model="msg.priority"></label>
             </div>
-          </draggable>
-          <button class="btn btn-sm btn-outline-success" @click="msg.content[langcode].push({type:null,content:null})">
-            Lisää uusi kenttä
-          </button>
-        </fieldset>
+            <div class="form-group col">
+              <label>Näkyvyys*
+                <select class="form-control" v-model="msg.persistence">
+                  <option value="once">Näytä kerran</option>
+                  <option value="repeat">Toistuva</option>
+                </select></label>
+            </div>
+            <div class="form-group col">
+              <label>Tyyppi*
+                <select class="form-control" v-model="msg.type">
+                  <option value="info">Info</option>
+                  <option value="error">Virhe</option>
+                </select></label>
+            </div>
+            <div class="form-group col">
+              <label>Valitse Ikoni tai lisää ikoni tiedostosta(svg)
+                <select class="form-control" v-model="msg.icon">
+                  <option value="info">Info</option>
+                  <option value="geonotifier">Sijainti-info</option>
+                </select>
+                <input type="file" id="custom-icon" @change="loadDataFromFile($event, k)"> 
+              </label>
+            </div>
+            <div class="form-group col">
+              <label>Lisää geoJson
+                <input type="file" id="geoJson" @change="loadGeoJson($event, k)"> 
+              </label>
+            </div>
+            <div class="form-group col">
+              <label>Taustaväri
+                <input id="background-color" class="color-input form-control" type="color" v-model="msg.backgroundColor">
+              </label>
+            </div>
+            <div class="form-group col">
+              <label>Tekstin väri
+                <input id="text-color" class="form-control" type="color" v-model="msg.textColor" >
+              </label>
+            </div>
+          </div>
+          <fieldset v-for="langcode in langcodes" class="card m-1 p-1">
+            <legend>Kieliversio: {{langcode}}</legend>
+            <small>Raahaa kenttiä muuttaaksesi järjestystä</small>
+            <draggable v-model="msg.content[langcode]" :options="{draggable:'.field'}">
+              <div class="row field border border-secondary m-1 p-1" v-for="cont in msg.content[langcode]">
+
+                <div class="form-group col-sm-1">
+                  <label>Kenttä:</label><select class="form-control" v-model="cont.type" @change="onSelect(cont)">
+                    <option value="heading">Otsikko</option>
+                    <option value="text">Teksti</option>
+                    <option value="a">Linkki</option>
+                  </select>
+                </div>
+                <div class="form-group col">
+                  <label>Sisältö:</label><textarea class="form-control" v-model="cont.content"></textarea>
+                </div>
+                <div class="form-group col" v-if="cont.type==='a'">
+                  <label>Linkin osoite:</label><input class="form-control" v-model="cont.href">
+                </div>
+                <div class="form-group col" v-if="cont.type==='a'">
+                  <label>Linkin väri:</label><input type="color" class="form-control" v-model="cont.color">
+                </div>
+              </div>
+            </draggable>
+            <button class="btn btn-sm btn-outline-success"
+              @click="msg.content[langcode].push({type:null,content:null})">
+              Lisää uusi kenttä
+            </button>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="msgModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Yleisviestin sisältö raakana</h3>
+          </div>
+
+          <div class="modal-body">
+            <pre>{{rawMessage}}</pre>
+          </div>
+          <div class="modal-footer">
+            <button class="modal-default-button" data-dismiss="modal">Sulje</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-  <div class="modal fade" id="msgModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Yleisviestin sisältö raakana</h3>
-        </div>
-
-        <div class="modal-body">
-          <pre>{{rawMessage}}</pre>
-        </div>
-        <div class="modal-footer">
-          <button class="modal-default-button" data-dismiss="modal">Sulje</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 
-<script src='static/js/jquery-2.2.4.min.js'></script>
-<script src='static/js/bootstrap.bundle.min.js'></script>
-<script src='static/js/moment-2.18.1.js'></script>
-<script src='static/js/lodash.min.js'></script>
-<script src='static/js/vue.min.js'></script>
-<script src="//cdn.jsdelivr.net/npm/sortablejs@1.7.0/Sortable.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.15.0/vuedraggable.min.js"></script>
-<script>
-  Vue.component('modal', {
-    template: '#modal-template'
-  })
-  const app = new Vue({
-    el: '#app',
-    data: {
-      langcodes: ['fi', 'en', 'sv'],
-      staticMessages: [],
-      showModal: false
-    },
-    computed: {
-      rawMessage: function () {
-        return JSON.stringify({staticMessages: this.staticMessages}, null, 4)
-      }
-    },
-    methods: {
-      getInitialMessages: function () {
-        const self = this
-        $.getJSON('/', function (data) {
-          if (data.staticMessages === undefined) return false
-          data.staticMessages.forEach(function (msg) {
-            self.staticMessages.push(msg)
-          })
-        })
+  <script src='static/js/jquery-2.2.4.min.js'></script>
+  <script src='static/js/bootstrap.bundle.min.js'></script>
+  <script src='static/js/moment-2.18.1.js'></script>
+  <script src='static/js/lodash.min.js'></script>
+  <script src='static/js/vue.min.js'></script>
+  <script src="//cdn.jsdelivr.net/npm/sortablejs@1.7.0/Sortable.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.15.0/vuedraggable.min.js"></script>
+  <script>
+    Vue.component('modal', {
+      template: '#modal-template'
+    })
+    const app = new Vue({
+      el: '#app',
+      data: {
+        langcodes: ['fi', 'en', 'sv'],
+        staticMessages: [],
+        showModal: false,
       },
-      removeMessage: function (index) {
-        Vue.delete(this.staticMessages, index)
-      },
-      addNewMessage: function () {
-        const newId = moment().format('DDMMYYYY_HHmmss_SS').toString()
-        let newMsg = {
-          id: newId,
-          content: {}
-
+      computed: {
+        rawMessage: function () {
+          return JSON.stringify({ staticMessages: this.staticMessages }, null, 4)
         }
-        this.langcodes.forEach(function (lc) {
-          newMsg.content[lc] = []
-        })
-
-        this.staticMessages.push(newMsg)
       },
-      saveMessages: function () {
-        if (confirm('Oletko varma? (korvaa olemassa olevan viestin)') === true) {
-          $.ajax({
-            type: 'POST',
-            url: 'copyJson',
-            contentType: 'application/json;charset=utf-8',
-            data: this.rawMessage,
-            success: function () {
-              console.log('Tallennus onnistui')
+      methods: {
+        getInitialMessages: function () {
+          const self = this
+          $.getJSON('/', function (data) {
+            if (data.staticMessages === undefined) return false
+            data.staticMessages.forEach(function (msg) {
+              self.staticMessages.push(msg)
+            })
+          })
+        },
+        removeMessage: function (index) {
+          Vue.delete(this.staticMessages, index)
+        },
+        addNewMessage: function () {
+          const newId = moment().format('DDMMYYYY_HHmmss_SS').toString()
+          let newMsg = {
+            id: newId,
+            content: {},
+            dataURI: '',
+            geoJson: '',
+            backgroundColor: '#ffffff',
+            textColor: '#000000',
+          }
+          this.langcodes.forEach(function (lc) {
+            newMsg.content[lc] = []
+          })
+
+          this.staticMessages.push(newMsg)
+        },
+        saveMessages: function () {
+          if (confirm('Oletko varma? (korvaa olemassa olevan viestin)') === true) {
+            $.ajax({
+              type: 'POST',
+              url: 'copyJson',
+              contentType: 'application/json;charset=utf-8',
+              data: this.rawMessage,
+              success: function () {
+                console.log('Tallennus onnistui')
+              }
+            })
+          }
+        },
+        loadDataFromFile: function(event, index) {
+          const file = event.target.files[0];
+          const reader = new FileReader();
+          if (file && file.type === 'image/svg+xml') {
+            reader.onload = e => {
+              this.staticMessages[index].dataURI = e.target.result;
+            };
+            reader.readAsDataURL(file);
+          } else if (file && file.type !== 'image/svg+xml'){
+            document.getElementById('custom-icon').value = '';
+            alert('Valitsemasi tiedosto ei ole svg muodossa')
+          }
+        },
+        loadGeoJson: function(event, index) {
+          const file = event.target.files[0];
+          const reader = new FileReader();
+          if (file && file.type === 'application/geo+json') {
+            reader.onload = e => {
+              this.staticMessages[index].geoJson = e.target.result;
             }
-          })
-        }
-      }
-    },
-    created: function () {
-      this.getInitialMessages()
-    }
-  })
-</script>
+            reader.readAsDataURL(file);
+          } else if (file && file.type !== 'application/geo+json') {
+            document.getElementById('geoJson').value = '';
+            alert('Valitsemasi tiedosto ei ole geojson muodossa')
+          }
+        },
+        onSelect: function(cont) {
+          if (cont.type === 'a') {
+            cont.color = '#007ac9';
+          }
+        },
+      },
+      created: function () {
+        this.getInitialMessages()
+      },
+    })
+  </script>
 </body>
+
 </html>
