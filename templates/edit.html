@@ -206,12 +206,12 @@
         loadDataFromFile: function(event, index) {
           const file = event.target.files[0];
           const reader = new FileReader();
-          if (file && file.type === 'image/svg+xml') {
+          if (file && file.type.indexOf('svg') !== -1) {
             reader.onload = e => {
               this.staticMessages[index].dataURI = e.target.result;
             };
             reader.readAsDataURL(file);
-          } else if (file && file.type !== 'image/svg+xml'){
+          } else if (file && file.type.indexOf('svg') === -1){
             document.getElementById('custom-icon').value = '';
             alert('Valitsemasi tiedosto ei ole svg muodossa')
           }
@@ -219,12 +219,12 @@
         loadGeoJson: function(event, index) {
           const file = event.target.files[0];
           const reader = new FileReader();
-          if (file && file.type === 'application/geo+json') {
+          if (file && file.type.indexOf('json') !== -1) {
             reader.onload = e => {
               this.staticMessages[index].geoJson = e.target.result;
             }
             reader.readAsDataURL(file);
-          } else if (file && file.type !== 'application/geo+json') {
+          } else if (file && file.type.indexOf('json') === -1) {
             document.getElementById('geoJson').value = '';
             alert('Valitsemasi tiedosto ei ole geojson muodossa')
           }
