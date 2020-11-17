@@ -2,6 +2,8 @@
 
 ## yleisviestipalvelu
 
+Uses travis-ci.com now.
+
 ### prerequisites
 
 You must have an APR1 formatted password hash, which can be created with openssl(1):
