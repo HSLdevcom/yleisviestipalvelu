@@ -35,7 +35,7 @@ When running the service in Swarm use a compose file such as:
 ### usage
 
 User interface for managing message content is available in path /ui/edit
-(e.g. https://matka.yleisviesti.digitransit.fi/ui/edit).
+(e.g. https://matka-yleisviesti.digitransit.fi/ui/edit).
 
 Editing endpoint requires basic authentication - use the password from hash generation step above. If the password
 gets forgotten, generate a new one. It is not possible to extract the password from the hash.
