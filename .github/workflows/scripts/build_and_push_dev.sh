@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-DOCKER_IMAGE="hsldevcom/digitransit-site"
+DOCKER_IMAGE="hsldevcom/yleisviestipalvelu"
 DOCKER_TAG=${DOCKER_BASE_TAG:-latest}
 
 COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")
@@ -11,7 +11,7 @@ DOCKER_IMAGE_TAG=$DOCKER_IMAGE:$DOCKER_TAG
 DOCKER_IMAGE_TAG_LONG=$DOCKER_IMAGE:$DOCKER_TAG_LONG
 
 # Build image
-echo "Building digitransit-site"
+echo "Building yleisviestipalvelu"
 docker build --tag=$DOCKER_IMAGE_TAG_LONG .
 
 docker login -u $DOCKER_USER -p $DOCKER_AUTH

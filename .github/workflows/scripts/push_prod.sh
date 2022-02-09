@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-DOCKER_IMAGE="hsldevcom/digitransit-site"
+DOCKER_IMAGE="hsldevcom/yleisviestipalvelu"
 DOCKER_TAG=${DOCKER_BASE_TAG:-prod}
 DOCKER_DEV_TAG=${DOCKER_DEV_TAG:-latest}
 
