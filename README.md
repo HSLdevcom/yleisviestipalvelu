@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/HSLdevcom/yleisviestipalvelu.svg?branch=master)](https://travis-ci.org/HSLdevcom/yleisviestipalvelu)
+[![Build](https://github.com/hsldevcom/yleisviestipalvelu/workflows/Process%20master%20push%20or%20pr/badge.svg?branch=next)](https://github.com/HSLdevcom/yleisviestipalvelu/actions)
 
 ## yleisviestipalvelu
 
