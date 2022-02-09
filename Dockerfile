@@ -1,6 +1,6 @@
 FROM nginx:mainline-alpine
 
-RUN apk add --no-cache python2 py-pip
+RUN apk add --no-cache python3 py-pip
 
 RUN pip install tornado
 

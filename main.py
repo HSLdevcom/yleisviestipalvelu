@@ -27,9 +27,9 @@ class Application(web.Application):
 def main():
     options.parse_command_line()
     http_server = httpserver.HTTPServer(Application())
-    http_server.listen(options.port)
+    http_server.listen(8900)
 
-    print("Listening on port: " + str(options.port))
+    print("Listening on port 8900")
     autoreload.start()
 
     ioloop.IOLoop.instance().start()
