@@ -2,7 +2,7 @@ FROM nginx:mainline-alpine
 
 RUN apk add --no-cache python3 py-pip
 
-RUN pip install tornado
+RUN pip install --break-system-packages tornado
 
 COPY run_yleisviesti.sh run_yleisviesti.sh
 COPY nginx.conf /etc/nginx/nginx.conf
